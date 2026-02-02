@@ -94,11 +94,53 @@ void test_multiple_samples_pcm24in32() {
     std::cout << "test_multiple_samples_pcm24in32 passed\n";
 }
 
+void test_clamping_pcm16() {
+    const int numSamples = 1;
+    int16_t inputData[2] = {20000, 25000};  // sample 0: ch0=20000 (~0.610), ch1=25000 (~0.762)
+    int16_t outputData[2] = {0, 0};
+
+    processAudioBlock(inputData, outputData, numSamples, FORMAT_PCM16);
+
+    // Convert output back to float for assertion
+    float out_ch0 = outputData[0] / 32768.0f;
+    float out_ch1 = outputData[1] / 32768.0f;
+
+    // Should be clamped to 1.0 since 0.610*2=1.22 >1, 0.762*2=1.524>1
+    assert(abs(out_ch0 - 1.0f) < 0.001f);
+    assert(abs(out_ch1 - 1.0f) < 0.001f);
+
+    std::cout << "test_clamping_pcm16 passed\n";
+}
+
+void test_clamping_pcm24in32() {
+    const int numSamples = 1;
+    // For 0.6: 0.6 * 8388608 ≈ 5033164.8, left-justified: 5033164 << 8 ≈ 1288491008
+    // For 0.7: 0.7 * 8388608 ≈ 5872025.6, left-justified: 5872025 << 8 ≈ 1503232000
+    int32_t inputData[2] = {1288491008, 1503232000};
+    int32_t outputData[2] = {0, 0};
+
+    processAudioBlock(inputData, outputData, numSamples, FORMAT_PCM24IN32);
+
+    // Convert output back to float
+    int32_t v0 = outputData[0] >> 8;
+    int32_t v1 = outputData[1] >> 8;
+    float out_ch0 = v0 * (1.0f / 8388608.0f);
+    float out_ch1 = v1 * (1.0f / 8388608.0f);
+
+    // Should be clamped to 1.0
+    assert(abs(out_ch0 - 1.0f) < 0.001f);
+    assert(abs(out_ch1 - 1.0f) < 0.001f);
+
+    std::cout << "test_clamping_pcm24in32 passed\n";
+}
+
 int main() {
     test_single_sample_pcm16();
     test_multiple_samples_pcm16();
     test_single_sample_pcm24in32();
     test_multiple_samples_pcm24in32();
+    test_clamping_pcm16();
+    test_clamping_pcm24in32();
 
     std::cout << "All tests passed!\n";
     return 0;

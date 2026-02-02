@@ -50,14 +50,14 @@ inline void lineOut(float* in_sample) {
     if (g_format == FORMAT_PCM16) {
         auto output = (int16_t*)g_output;
         for (int c = 0; c < CH; c++) {
-            output[g_sampleIdx * CH + c] = in_sample[c] * 32767.0f;
+            float clamped = std::clamp(in_sample[c], -1.0f, 1.0f);
+            output[g_sampleIdx * CH + c] = clamped * 32767.0f;
         }
     } else if (g_format == FORMAT_PCM24IN32) {
         auto output = (int32_t*)g_output;
         for (int c = 0; c < CH; c++) {
-            // Back to 24-bit
-            int32_t y = (int32_t)(in_sample[c] * 8388607.0f);
-            // Left-justify into 32-bit container
+            float clamped = std::clamp(in_sample[c], -1.0f, 1.0f);
+            int32_t y = (int32_t)(clamped * 8388607.0f);
             output[g_sampleIdx * CH + c] = y << 8;
         }
     }
