@@ -9,18 +9,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
-# Find Windows SDK
-if(WIN32)
-    # Get Windows SDK include path
-    get_filename_component(WINDOWS_SDK_INCLUDE "$ENV{WindowsSdkDir}Include/$ENV{WindowsSDKVersion}" ABSOLUTE)
-    if(EXISTS "${WINDOWS_SDK_INCLUDE}")
-        include_directories("${WINDOWS_SDK_INCLUDE}/um")
-        include_directories("${WINDOWS_SDK_INCLUDE}/shared")
-    endif()
-endif()
-
-add_executable(JamCore)
-
 target_sources(JamCore PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/graph.cpp
