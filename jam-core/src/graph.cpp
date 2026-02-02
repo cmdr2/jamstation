@@ -4,6 +4,9 @@
 #include <cassert>
 #include <cmath>
 
+static constexpr float MAX_INT16 = static_cast<float>(1 << 15);
+static constexpr float MAX_INT24 = static_cast<float>(1 << 23);
+
 static constexpr int CH = 2;
 
 const void* g_input;  // array of input sample pointers. sample0Channel0, sample0Channel1, sample1Channel0, ...
@@ -19,7 +22,7 @@ inline void lineIn(float* out_sample) {
     if (g_format == FORMAT_PCM16) {
         auto input = (const int16_t*)g_input;
         for (int c = 0; c < CH; c++) {
-            out_sample[c] = input[g_sampleIdx * CH + c] / 32768.0f;
+            out_sample[c] = input[g_sampleIdx * CH + c] / MAX_INT16;
         }
     } else if (g_format == FORMAT_PCM24IN32) {
         auto input = (const int32_t*)g_input;
@@ -27,7 +30,7 @@ inline void lineIn(float* out_sample) {
             // Extract valid 24-bit sample (signed)
             int32_t v = input[g_sampleIdx * CH + c] >> 8;
             // Normalize
-            out_sample[c] = v * (1.0f / 8388608.0f);
+            out_sample[c] = v / MAX_INT24;
         }
     }
 }
@@ -51,13 +54,13 @@ inline void lineOut(float* in_sample) {
         auto output = (int16_t*)g_output;
         for (int c = 0; c < CH; c++) {
             float clamped = std::clamp(in_sample[c], -1.0f, 1.0f);
-            output[g_sampleIdx * CH + c] = clamped * 32767.0f;
+            output[g_sampleIdx * CH + c] = clamped * (MAX_INT16 - 1.0f);
         }
     } else if (g_format == FORMAT_PCM24IN32) {
         auto output = (int32_t*)g_output;
         for (int c = 0; c < CH; c++) {
             float clamped = std::clamp(in_sample[c], -1.0f, 1.0f);
-            int32_t y = (int32_t)(clamped * 8388607.0f);
+            int32_t y = (int32_t)(clamped * (MAX_INT24 - 1.0f));
             output[g_sampleIdx * CH + c] = y << 8;
         }
     }
