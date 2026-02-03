@@ -47,6 +47,13 @@ inline void clip(float* in_sample, float in_threshold, float* out_sample) {
     }
 }
 
+inline void overdrive(float* in_sample, float in_gain, float* out_sample) {
+    // try gain = 25
+    for (int c = 0; c < CH; c++) {
+        out_sample[c] = std::tanh(in_sample[c] * in_gain);
+    }
+}
+
 inline void lineOut(float* in_sample) {
     assert(g_format == FORMAT_PCM16 || g_format == FORMAT_PCM24IN32);
 
