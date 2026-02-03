@@ -41,7 +41,7 @@ inline void gain(float* in_sample, float in_gain, float* out_sample) {
     }
 }
 
-inline float clip(float* in_sample, float in_threshold, float* out_sample) {
+inline void clip(float* in_sample, float in_threshold, float* out_sample) {
     for (int c = 0; c < CH; c++) {
         out_sample[c] = std::clamp(in_sample[c], -in_threshold, in_threshold);
     }
